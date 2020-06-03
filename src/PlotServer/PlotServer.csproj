@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>PlotServer</RootNamespace>
     <AssemblyName>PlotServer</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
@@ -91,11 +91,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <ItemGroup Condition="'$(Platform)' == 'x64'">
-    <Reference Include="AXLBase">
-      <HintPath>..\..\..\..\Orc\orca\Axlib\AXLBase\bin\x64\Release\AXLBase.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'AnyCPU'">
     <Reference Include="AXLBase">
       <HintPath>..\..\..\..\Orc\orca\Axlib\AXLBase\bin\x64\Release\AXLBase.dll</HintPath>
@@ -217,6 +212,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\AXLBase\AxlBase.csproj">
+      <Project>{5161c277-890e-4742-b01c-0f84e99b2366}</Project>
+      <Name>AxlBase</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\dev\FormsPlotSandbox\FormsPlotSandbox.csproj">
       <Project>{78cc0da0-f9fd-4377-9122-0a33ee87469e}</Project>
       <Name>FormsPlotSandbox</Name>
