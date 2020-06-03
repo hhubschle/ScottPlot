@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using AXBase;
 using AXBase.GuiUtils;
+using WeifenLuo.WinFormsUI.Docking;
 using Cursors = System.Windows.Forms.Cursors;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 
@@ -27,6 +28,7 @@ namespace PlotServer
 
 			try
 			{
+				CreateDoc(file);
 				ActivePlotContainer?.SetData(field);
 			}
 			catch (Exception ex)
@@ -39,9 +41,8 @@ namespace PlotServer
 		{
 			get
 			{
-				var selTab = tabControl1.SelectedTab;
-				var container = selTab.Controls.OfType<PlotContainer>().FirstOrDefault();
-				return container;
+				var selDoc = dockPanel1.ActiveDocument as PlotDoc;
+				return selDoc?.Plot;
 			}
 		}
 
@@ -125,23 +126,7 @@ namespace PlotServer
 				try
 				{
 					var field = LoadVectorField(filename);
-
-					var plotContainer = new PlotContainer {Dock = DockStyle.Fill, AllowDrop = true,};
-					plotContainer.DragEnter += Form1_DragEnter;
-					plotContainer.DragDrop += Form1_DragDrop;
-					var tabPage = new TabPage();
-
-					tabPage.Controls.Add(plotContainer);
-					tabPage.Location = new System.Drawing.Point(4, 22);
-					tabPage.Name = "tabPage";
-					tabPage.Padding = new System.Windows.Forms.Padding(3);
-					tabPage.Size = new System.Drawing.Size(792, 399);
-					tabPage.TabIndex = 2;
-					tabPage.Text = Path.GetFileName(filename);
-					tabPage.UseVisualStyleBackColor = true;
-					tabControl1.Controls.Add(tabPage);
-					tabControl1.SelectedTab = tabPage;
-
+					CreateDoc(filename);
 					ActivePlotContainer?.SetData(field);
 				}
 				catch (Exception ex)
@@ -152,5 +137,44 @@ namespace PlotServer
 
 
 		}
+
+		private PlotDoc CreateDoc(string filename)
+		{
+			var doc = new PlotDoc();
+			var plotContainer = doc.Plot;
+			plotContainer.DragEnter += Form1_DragEnter;
+			plotContainer.DragDrop += Form1_DragDrop;
+			doc.Text = Path.GetFileName(filename);
+			if (dockPanel1.DocumentStyle == DocumentStyle.SystemMdi)
+			{
+				doc.MdiParent = this;
+				doc.Show();
+			}
+			else
+				doc.Show(dockPanel1);
+
+			doc.Show(dockPanel1);
+			return doc;
+		}
+
+		// private TabPage CreatePage(string filename)
+		// {
+		// 	var plotContainer = new PlotContainer {Dock = DockStyle.Fill, AllowDrop = true,};
+		// 	plotContainer.DragEnter += Form1_DragEnter;
+		// 	plotContainer.DragDrop += Form1_DragDrop;
+		// 	var tabPage = new TabPage();
+		//
+		// 	tabPage.Controls.Add(plotContainer);
+		// 	tabPage.Location = new System.Drawing.Point(4, 22);
+		// 	tabPage.Name = "tabPage";
+		// 	tabPage.Padding = new System.Windows.Forms.Padding(3);
+		// 	tabPage.Size = new System.Drawing.Size(792, 399);
+		// 	tabPage.TabIndex = 2;
+		// 	tabPage.Text = Path.GetFileName(filename);
+		// 	tabPage.UseVisualStyleBackColor = true;
+		// 	tabControl1.Controls.Add(tabPage);
+		// 	tabControl1.SelectedTab = tabPage;
+		// 	return tabPage;
+		// }
 	}
 }

@@ -141,6 +141,12 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="UIAutomationProvider" />
+    <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=3.0.6.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
+      <HintPath>..\packages\DockPanelSuite.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2015, Version=3.0.6.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
+      <HintPath>..\packages\DockPanelSuite.ThemeVS2015.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
@@ -157,6 +163,12 @@
     <Compile Include="PlotContainer.Designer.cs">
       <DependentUpon>PlotContainer.cs</DependentUpon>
     </Compile>
+    <Compile Include="PlotDoc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlotDoc.Designer.cs">
+      <DependentUpon>PlotDoc.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -164,6 +176,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="PlotContainer.resx">
       <DependentUpon>PlotContainer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlotDoc.resx">
+      <DependentUpon>PlotDoc.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
