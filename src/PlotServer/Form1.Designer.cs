@@ -34,12 +34,8 @@
 			this.toolStripButtonPlus = new System.Windows.Forms.ToolStripButton();
 			this.toolStripButtonMinus = new System.Windows.Forms.ToolStripButton();
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-			this.tabPage1 = new System.Windows.Forms.TabPage();
-			this.plotContainer1 = new PlotServer.PlotContainer();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.toolStrip1.SuspendLayout();
-			this.tabPage1.SuspendLayout();
-			this.tabControl1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// toolStrip1
@@ -50,7 +46,7 @@
             this.toolStripButtonMinus});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(800, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(521, 25);
 			this.toolStrip1.TabIndex = 0;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -90,45 +86,24 @@
 			this.openFileDialog1.Filter = "CSV files|*.csv|XML fiels|*.xml|TXT files|*.txt";
 			this.openFileDialog1.Title = "Open file";
 			// 
-			// tabPage1
-			// 
-			this.tabPage1.Controls.Add(this.plotContainer1);
-			this.tabPage1.Location = new System.Drawing.Point(4, 22);
-			this.tabPage1.Name = "tabPage1";
-			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(792, 399);
-			this.tabPage1.TabIndex = 2;
-			this.tabPage1.Text = "main";
-			this.tabPage1.UseVisualStyleBackColor = true;
-			// 
-			// plotContainer1
-			// 
-			this.plotContainer1.AllowDrop = true;
-			this.plotContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.plotContainer1.Location = new System.Drawing.Point(3, 3);
-			this.plotContainer1.Name = "plotContainer1";
-			this.plotContainer1.Size = new System.Drawing.Size(786, 393);
-			this.plotContainer1.TabIndex = 0;
-			this.plotContainer1.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
-			this.plotContainer1.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
-			// 
 			// tabControl1
 			// 
 			this.tabControl1.AllowDrop = true;
-			this.tabControl1.Controls.Add(this.tabPage1);
 			this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabControl1.Location = new System.Drawing.Point(0, 25);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(800, 425);
+			this.tabControl1.Size = new System.Drawing.Size(521, 447);
 			this.tabControl1.TabIndex = 1;
+			this.tabControl1.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
+			this.tabControl1.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
 			// 
 			// Form1
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.ClientSize = new System.Drawing.Size(521, 472);
 			this.Controls.Add(this.tabControl1);
 			this.Controls.Add(this.toolStrip1);
 			this.Name = "Form1";
@@ -137,8 +112,6 @@
 			this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
-			this.tabPage1.ResumeLayout(false);
-			this.tabControl1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -151,8 +124,6 @@
 		private System.Windows.Forms.OpenFileDialog openFileDialog1;
 		private System.Windows.Forms.ToolStripButton toolStripButtonPlus;
 		private System.Windows.Forms.ToolStripButton toolStripButtonMinus;
-		private System.Windows.Forms.TabPage tabPage1;
-		private PlotContainer plotContainer1;
 		private System.Windows.Forms.TabControl tabControl1;
 	}
 }
