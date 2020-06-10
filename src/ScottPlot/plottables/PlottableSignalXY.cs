@@ -1,17 +1,17 @@
-﻿using ScottPlot.Config;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using ScottPlot.Config;
 
 namespace ScottPlot
 {
     public class PlottableSignalXY : PlottableSignal
     {
         public double[] xs;
-        public PlottableSignalXY(double[] xs, double[] ys, Color color, double lineWidth, double markerSize, string label, int maxRenderIndex, LineStyle lineStyle)
-            : base(ys, 1, 0, 0, color, lineWidth, markerSize, label, null, maxRenderIndex, lineStyle)
+        public PlottableSignalXY(double[] xs, double[] ys, Color color, double lineWidth, double markerSize, string label, int maxRenderIndex, LineStyle lineStyle, bool useParallel)
+            : base(ys, 1, 0, 0, color, lineWidth, markerSize, label, null, maxRenderIndex, lineStyle, useParallel)
         {
             if ((xs == null) || (ys == null))
                 throw new ArgumentException("X and Y data cannot be null");

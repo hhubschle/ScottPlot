@@ -1,4 +1,4 @@
-/* The Plot class is the primary public interface to ScottPlot.
+﻿/* The Plot class is the primary public interface to ScottPlot.
  * - This should be the only class the user interacts with.
  * - Internal refactoring can occur as long as these functions remain fixed.
  * - This file is intentionally spaced out to make code changes easier to review.
@@ -12,7 +12,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Reflection;
+using ScottPlot.Statistics;
 
 namespace ScottPlot
 {
@@ -20,6 +20,13 @@ namespace ScottPlot
     {
         public PixelFormat pixelFormat = PixelFormat.Format32bppPArgb;
         private readonly Settings settings;
+        public bool containsHeatmap
+        {
+            get
+            {
+                return settings.plottables.Where(p => p is PlottableHeatmap).Count() > 0;
+            }
+        }
 
         public Plot(int width = 800, int height = 600)
         {
@@ -571,6 +578,34 @@ namespace ScottPlot
             return scalebar;
         }
 
+        [Obsolete("This method is experimental and may change in subsequent versions")]
+        public PlottableHeatmap PlotHeatmap(
+            double[,] intensities,
+            Config.ColorMaps.Colormaps colorMap = Config.ColorMaps.Colormaps.viridis,
+            string label = null,
+            double[] axisOffsets = null,
+            double[] axisMultipliers = null
+            )
+        {
+            if (axisOffsets == null)
+            {
+                axisOffsets = new double[] { 0, 0 };
+            }
+
+            if (axisMultipliers == null)
+            {
+                axisMultipliers = new double[] { 1, 1 };
+            }
+
+            PlottableHeatmap heatmap = new PlottableHeatmap(intensities, colorMap, label, axisOffsets, axisMultipliers);
+            settings.plottables.Add(heatmap);
+            MatchAxis(this);
+            Ticks(false, false); //I think we need to sort out our own labelling with System.Drawing
+            Layout(y2LabelWidth: 180);
+
+            return heatmap;
+        }
+
         public PlottableScatter PlotScatter(
             double[] xs,
             double[] ys,
@@ -609,6 +644,56 @@ namespace ScottPlot
             return scatterPlot;
         }
 
+        public PlottableScatterHighlight PlotScatterHighlight(
+           double[] xs,
+           double[] ys,
+           Color? color = null,
+           double lineWidth = 1,
+           double markerSize = 5,
+           string label = null,
+           double[] errorX = null,
+           double[] errorY = null,
+           double errorLineWidth = 1,
+           double errorCapSize = 3,
+           MarkerShape markerShape = MarkerShape.filledCircle,
+           LineStyle lineStyle = LineStyle.Solid,
+           MarkerShape highlightedShape = MarkerShape.openCircle,
+           Color? highlightedColor = null,
+           double? highlightedMarkerSize = null
+           )
+        {
+            if (color is null)
+                color = settings.GetNextColor();
+
+            if (highlightedColor is null)
+                highlightedColor = Color.Red;
+
+            if (highlightedMarkerSize is null)
+                highlightedMarkerSize = 2 * markerSize;
+
+            PlottableScatterHighlight scatterPlot = new PlottableScatterHighlight(
+                xs: xs,
+                ys: ys,
+                color: (Color)color,
+                lineWidth: lineWidth,
+                markerSize: markerSize,
+                label: label,
+                errorX: errorX,
+                errorY: errorY,
+                errorLineWidth: errorLineWidth,
+                errorCapSize: errorCapSize,
+                stepDisplay: false,
+                markerShape: markerShape,
+                lineStyle: lineStyle,
+                highlightedShape: highlightedShape,
+                highlightedColor: highlightedColor.Value,
+                highlightedMarkerSize: highlightedMarkerSize.Value
+                );
+
+            settings.plottables.Add(scatterPlot);
+            return scatterPlot;
+        }
+
         public PlottableErrorBars PlotErrorBars(
             double[] xs,
             double[] ys,
@@ -640,6 +725,25 @@ namespace ScottPlot
 
             settings.plottables.Add(errorBars);
             return errorBars;
+        }
+
+        public PlottableRadar PlotRadar(
+            double[,] values,
+            string[] categoryNames = null,
+            string[] groupNames = null,
+            Color[] fillColors = null,
+            double fillAlpha = .4,
+            Color? webColor = null
+            )
+        {
+            fillColors = fillColors ?? Enumerable.Range(0, values.Length).Select(i => settings.colors.GetColor(i)).ToArray();
+            webColor = webColor ?? Color.Gray;
+
+            var plottable = new PlottableRadar(values, categoryNames, groupNames, fillColors, (byte)(fillAlpha * 256), webColor.Value);
+            settings.plottables.Add(plottable);
+            MatchAxis(this);
+
+            return plottable;
         }
 
         public PlottableAnnotation PlotAnnotation(
@@ -684,6 +788,28 @@ namespace ScottPlot
 
             Add(plottable);
             return plottable;
+        }
+
+        [Obsolete("This method is experimental and may change in subsequent versions")]
+        public PlottableVectorField PlotVectorField(
+            Vector2[,] vectors,
+            double[] xs,
+            double[] ys,
+            string label = null,
+            Color? color = null,
+            Config.ColorMaps.Colormap colormap = null,
+            double scaleFactor = 1
+            )
+        {
+            if (!color.HasValue)
+            {
+                color = settings.GetNextColor();
+            }
+
+            var vectorField = new PlottableVectorField(vectors, xs, ys, label, color.Value, colormap, scaleFactor);
+
+            settings.plottables.Add(vectorField);
+            return vectorField;
         }
 
         public PlottableScatter PlotArrow(
@@ -843,7 +969,8 @@ namespace ScottPlot
             double markerSize = 5,
             string label = null,
             int? maxRenderIndex = null,
-            LineStyle lineStyle = LineStyle.Solid
+            LineStyle lineStyle = LineStyle.Solid,
+            bool useParallel = true
             )
         {
             if (color == null)
@@ -860,7 +987,8 @@ namespace ScottPlot
                 markerSize: markerSize,
                 label: label,
                 maxRenderIndex: (int)maxRenderIndex,
-                lineStyle: lineStyle
+                lineStyle: lineStyle,
+                useParallel: useParallel
                 );
 
             settings.plottables.Add(signal);
@@ -878,7 +1006,8 @@ namespace ScottPlot
             string label = null,
             Color[] colorByDensity = null,
             int? maxRenderIndex = null,
-            LineStyle lineStyle = LineStyle.Solid
+            LineStyle lineStyle = LineStyle.Solid,
+            bool useParallel = true
             )
         {
             if (color == null)
@@ -898,7 +1027,8 @@ namespace ScottPlot
                 label: label,
                 colorByDensity: colorByDensity,
                 maxRenderIndex: (int)maxRenderIndex,
-                lineStyle: lineStyle
+                lineStyle: lineStyle,
+                useParallel: useParallel
                 );
 
             settings.plottables.Add(signal);
@@ -1244,6 +1374,37 @@ namespace ScottPlot
             return plottable;
         }
 
+        public PlottablePolygons PlotPolygons(
+            List<List<(double x, double y)>> polys,
+            string label = null,
+            double lineWidth = 0,
+            Color? lineColor = null,
+            bool fill = true,
+            Color? fillColor = null,
+            double fillAlpha = 1
+            )
+        {
+            if (lineColor is null)
+                lineColor = settings.GetNextColor();
+
+            if (fillColor is null)
+                fillColor = settings.GetNextColor();
+
+            var plottable = new ScottPlot.PlottablePolygons(
+                    polys: polys,
+                    label: label,
+                    lineWidth: lineWidth,
+                    lineColor: lineColor.Value,
+                    fill: fill,
+                    fillColor: fillColor.Value,
+                    fillAlpha: fillAlpha
+                );
+
+            Add(plottable);
+
+            return plottable;
+        }
+
         public PlottablePopulations PlotPopulations(Statistics.Population population, string label = null)
         {
             var plottable = new PlottablePopulations(population, label, settings.GetNextColor());
@@ -1424,6 +1585,8 @@ namespace ScottPlot
             settings.AxisAuto(horizontalMargin, verticalMargin, xExpandOnly, yExpandOnly);
             if (tightenLayout)
                 TightenLayout();
+            else
+                settings.layout.tighteningOccurred = true;
             return settings.axes.limits;
         }
 
@@ -1956,7 +2119,7 @@ namespace ScottPlot
                 settings.axes.y.min = sourcePlot.settings.axes.y.min;
                 settings.axes.y.max = sourcePlot.settings.axes.y.max;
             }
-            Resize();
+            TightenLayout();
         }
 
         // TODO: create a new Style()

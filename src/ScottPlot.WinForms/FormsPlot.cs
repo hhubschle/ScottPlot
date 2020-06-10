@@ -1,8 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Diagnostics;
-using System.ComponentModel;
 
 namespace ScottPlot
 {
@@ -91,7 +91,7 @@ namespace ScottPlot
         }
 
         private bool currentlyRendering;
-        public void Render(bool skipIfCurrentlyRendering = false, bool lowQuality = false, bool recalculateLayout = false)
+        public void Render(bool skipIfCurrentlyRendering = false, bool lowQuality = false, bool recalculateLayout = false, bool processEvents = false)
         {
             if (isDesignerMode)
                 return;
@@ -106,7 +106,7 @@ namespace ScottPlot
             {
                 currentlyRendering = true;
                 pbPlot.Image = plt?.GetBitmap(true, lowQuality);
-                if (isPanningOrZooming || isMovingDraggable)
+                if (isPanningOrZooming || isMovingDraggable || processEvents)
                     Application.DoEvents();
                 currentlyRendering = false;
                 Rendered?.Invoke(this, EventArgs.Empty);
@@ -134,7 +134,8 @@ namespace ScottPlot
         private bool equalAxes = false;
         private double middleClickMarginX = .1;
         private double middleClickMarginY = .1;
-        private bool recalculateLayoutOnMouseUp = true;
+        private bool? recalculateLayoutOnMouseUp = null;
+        private bool showCoordinatesTooltip = false;
         public void Configure(
             bool? enablePanning = null,
             bool? enableZooming = null,
@@ -147,7 +148,8 @@ namespace ScottPlot
             bool? equalAxes = null,
             double? middleClickMarginX = null,
             double? middleClickMarginY = null,
-            bool? recalculateLayoutOnMouseUp = null
+            bool? recalculateLayoutOnMouseUp = null,
+            bool? showCoordinatesTooltip = null
             )
         {
             if (enablePanning != null) this.enablePanning = (bool)enablePanning;
@@ -161,16 +163,18 @@ namespace ScottPlot
             if (equalAxes != null) this.equalAxes = (bool)equalAxes;
             this.middleClickMarginX = middleClickMarginX ?? this.middleClickMarginX;
             this.middleClickMarginY = middleClickMarginY ?? this.middleClickMarginY;
-            this.recalculateLayoutOnMouseUp = recalculateLayoutOnMouseUp ?? this.recalculateLayoutOnMouseUp;
+            this.recalculateLayoutOnMouseUp = recalculateLayoutOnMouseUp;
+            this.showCoordinatesTooltip = showCoordinatesTooltip ?? this.showCoordinatesTooltip;
         }
 
-        private bool isHorizontalLocked { get { return (ModifierKeys.HasFlag(Keys.Alt) || (lockHorizontalAxis)); } }
-        private bool isVerticalLocked { get { return (ModifierKeys.HasFlag(Keys.Control) || (lockVerticalAxis)); } }
+        private bool isShiftPressed { get { return (ModifierKeys.HasFlag(Keys.Shift) || (lockHorizontalAxis)); } }
+        private bool isCtrlPressed { get { return (ModifierKeys.HasFlag(Keys.Control) || (lockVerticalAxis)); } }
 
         #endregion
 
         #region mouse tracking
 
+        ToolTip tooltip = new ToolTip();
         private Point? mouseLeftDownLocation, mouseRightDownLocation, mouseMiddleDownLocation;
         double[] axisLimitsOnMouseDown;
         private bool isPanningOrZooming
@@ -208,7 +212,7 @@ namespace ScottPlot
             if (plottableBeingDragged is null)
             {
                 // MouseDown event is to start a pan or zoom
-                if (e.Button == MouseButtons.Left && ModifierKeys.HasFlag(Keys.Shift)) mouseMiddleDownLocation = e.Location;
+                if (e.Button == MouseButtons.Left && ModifierKeys.HasFlag(Keys.Alt)) mouseMiddleDownLocation = e.Location;
                 else if (e.Button == MouseButtons.Left && enablePanning) mouseLeftDownLocation = e.Location;
                 else if (e.Button == MouseButtons.Right && enableRightClickZoom) mouseRightDownLocation = e.Location;
                 else if (e.Button == MouseButtons.Middle && enableScrollWheelZoom) mouseMiddleDownLocation = e.Location;
@@ -234,6 +238,7 @@ namespace ScottPlot
             mouseLocation = e.Location;
             OnMouseMoved(e);
 
+            tooltip.Hide(this);
             if (isPanningOrZooming)
                 MouseMovedToPanOrZoom(e);
             else if (isMovingDraggable)
@@ -255,8 +260,8 @@ namespace ScottPlot
                 int deltaX = ((Point)mouseLeftDownLocation).X - e.Location.X;
                 int deltaY = e.Location.Y - ((Point)mouseLeftDownLocation).Y;
 
-                if (isVerticalLocked) deltaY = 0;
-                if (isHorizontalLocked) deltaX = 0;
+                if (isCtrlPressed) deltaY = 0;
+                if (isShiftPressed) deltaX = 0;
 
                 settings.AxesPanPx(deltaX, deltaY);
                 OnAxisChanged();
@@ -267,10 +272,10 @@ namespace ScottPlot
                 int deltaX = ((Point)mouseRightDownLocation).X - e.Location.X;
                 int deltaY = e.Location.Y - ((Point)mouseRightDownLocation).Y;
 
-                if (isVerticalLocked) deltaY = 0;
-                if (isHorizontalLocked) deltaX = 0;
+                if (isCtrlPressed == true && isShiftPressed == false) deltaY = 0;
+                if (isShiftPressed == true && isCtrlPressed == false) deltaX = 0;
 
-                settings.AxesZoomPx(-deltaX, -deltaY);
+                settings.AxesZoomPx(-deltaX, -deltaY, lockRatio: isCtrlPressed && isShiftPressed);
                 OnAxisChanged();
             }
             else if (mouseMiddleDownLocation != null)
@@ -318,6 +323,13 @@ namespace ScottPlot
 
         private void MouseMovedWithoutInteraction(MouseEventArgs e)
         {
+            if (showCoordinatesTooltip)
+            {
+                double coordX = plt.CoordinateFromPixelX(e.Location.X);
+                double coordY = plt.CoordinateFromPixelY(e.Location.Y);
+                tooltip.Show($"{coordX:N2}, {coordY:N2}", this, e.Location.X + 15, e.Location.Y);
+            }
+
             // set the cursor based on what's beneath it
             var draggableUnderCursor = plt.GetDraggableUnderMouse(e.Location.X, e.Location.Y);
             var spCursor = (draggableUnderCursor is null) ? Config.Cursor.Arrow : draggableUnderCursor.DragCursor;
@@ -352,7 +364,8 @@ namespace ScottPlot
                 }
                 else
                 {
-                    plt.AxisAuto(middleClickMarginX, middleClickMarginY, tightenLayout: recalculateLayoutOnMouseUp);
+                    bool shouldTighten = recalculateLayoutOnMouseUp ?? !plt.containsHeatmap;
+                    plt.AxisAuto(middleClickMarginX, middleClickMarginY, tightenLayout: shouldTighten);
                     OnAxisChanged();
                 }
             }
@@ -389,7 +402,8 @@ namespace ScottPlot
             settings.mouseMiddleRect = null;
             plottableBeingDragged = null;
 
-            Render(recalculateLayout: recalculateLayoutOnMouseUp);
+            bool shouldRecalculate = recalculateLayoutOnMouseUp ?? !plt.containsHeatmap;
+            Render(recalculateLayout: shouldRecalculate);
         }
 
         private void PbPlot_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -406,11 +420,13 @@ namespace ScottPlot
             double xFrac = (e.Delta > 0) ? 1.15 : 0.85;
             double yFrac = (e.Delta > 0) ? 1.15 : 0.85;
 
-            if (isVerticalLocked) yFrac = 1;
-            if (isHorizontalLocked) xFrac = 1;
+            if (isCtrlPressed) yFrac = 1;
+            if (isShiftPressed) xFrac = 1;
 
             plt.AxisZoom(xFrac, yFrac, plt.CoordinateFromPixelX(e.Location.X), plt.CoordinateFromPixelY(e.Location.Y));
-            Render(recalculateLayout: recalculateLayoutOnMouseUp);
+
+            bool shouldRecalculate = recalculateLayoutOnMouseUp ?? !plt.containsHeatmap;
+            Render(recalculateLayout: shouldRecalculate);
             OnAxisChanged();
 
             base.OnMouseWheel(e);
