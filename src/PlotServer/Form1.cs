@@ -126,8 +126,8 @@ namespace PlotServer
 				try
 				{
 					var field = LoadVectorField(filename);
-					CreateDoc(filename);
-					ActivePlotContainer?.SetData(field);
+					var doc = CreateDoc(filename);
+					doc.Plot.SetData(field);
 				}
 				catch (Exception ex)
 				{

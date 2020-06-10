@@ -18,7 +18,7 @@ namespace PlotServer
 		private RectWithVector[] toPlot;
 		private float plotScale = 100;
 		private int unitScale = 1000;
-		private int maxCount = 2000;
+		private int maxCount = 7500;
 		private IReadOnlyList<RectWithVector> field1;
 		private Plot Plt => formsPlot?.plt;
 
