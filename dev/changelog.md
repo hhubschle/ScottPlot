@@ -1,7 +1,20 @@
 # ScottPlot Changelog
 
-## ScottPlot 4.0.36 ⚠️ _in active development_
+## ScottPlot 4.0.38 ⚠️ _in active development_
+* nothing yet...
+
+## ScottPlot 4.0.37
+* Fixed a long-running issue related to strong assembly versioning that caused the WPF control to fail to render in the Visual Studio designer in .NET Framework (but not .NET Core) projects (#473, #466, #356) _Thanks @bhairav-thakkar, @riquich, @Helitune-RobMcKay, and @iu2kxv_
+* User controls now also target `net472` (while still supporting `net461` and `netcoreapp3.0`) to produce a build folder with just 3 DLLs (compared to over 100 when building with .NET Framework 4.6.1)
+
+## ScottPlot 4.0.36
 * `PlotSignal()` and `PlotSignalXY()` plots now have an optional `useParallel` argument (and public property on the objects they return) to allow the user to decide whether parallel or sequential calculations will be performed. (#454, #419, #245, #72) _Thanks @StendProg_
+* Improved minor tick alignment to prevent rare single-pixel artifacts (#417)
+* Improved horizontal axis tick label positions in ruler mode (#453)
+* Added a `Statistics.Interpolation` module to generate smooth interpolated splines from a small number of input data points. See advanced statistics cookbook example for usage information. (#459) _Thanks Hans-Peter Moser_
+* Improved automatic axis adjustment when adding bar plots with negative values (#461, #462) _Thanks @Benny121221_
+* Created `Drawing.Colormaps` module which has over a dozen colormaps for easily converting a fractional value to a color for use in plotting or heatmap displays (#457, #458) _Thanks @Benny121221_
+* Updated `Plot.Clear()` to accept any `Plottable` as an argument, and all `Plottable` objects of the same type will be cleared (#464) _Thanks @imka-code_
 
 ## ScottPlot 4.0.35
 * Added `processEvents` argument to `formsPlot2.Render()` to provide a performance enhancement when linking axes of two `FormsPlot` controls together (by calling `Plot.MatchAxis()` from the control's `AxesChanged` event, as seen in the _Linked Axes_ demo application) (#451, #452) _Thanks @StendProg and @robokamran_

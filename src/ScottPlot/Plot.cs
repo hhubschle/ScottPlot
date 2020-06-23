@@ -12,6 +12,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
+using ScottPlot.Config;
+using ScottPlot.Drawing;
 using ScottPlot.Statistics;
 
 namespace ScottPlot
@@ -290,6 +292,17 @@ namespace ScottPlot
         public void Clear(Type typeToClear)
         {
             settings.plottables.RemoveAll(x => x.GetType() == typeToClear);
+
+            if (settings.plottables.Count == 0)
+                settings.axes.Reset();
+        }
+
+        /// <summary>
+        /// Clear all plottables of the same type as the one that is given
+        /// </summary>
+        public void Clear(Plottable examplePlottable)
+        {
+            settings.plottables.RemoveAll(x => x.GetType() == examplePlottable.GetType());
 
             if (settings.plottables.Count == 0)
                 settings.axes.Reset();
@@ -581,23 +594,28 @@ namespace ScottPlot
         [Obsolete("This method is experimental and may change in subsequent versions")]
         public PlottableHeatmap PlotHeatmap(
             double[,] intensities,
-            Config.ColorMaps.Colormaps colorMap = Config.ColorMaps.Colormaps.viridis,
+            Colormap colormap = null,
             string label = null,
             double[] axisOffsets = null,
-            double[] axisMultipliers = null
+            double[] axisMultipliers = null,
+            double? scaleMin = null,
+            double? scaleMax = null,
+            double? transparencyThreshold = null,
+            Bitmap backgroundImage = null,
+            bool displayImageAbove = false,
+            bool drawAxisLabels = true
             )
         {
+            if (colormap == null)
+                colormap = Colormap.Viridis;
+
             if (axisOffsets == null)
-            {
                 axisOffsets = new double[] { 0, 0 };
-            }
 
             if (axisMultipliers == null)
-            {
                 axisMultipliers = new double[] { 1, 1 };
-            }
 
-            PlottableHeatmap heatmap = new PlottableHeatmap(intensities, colorMap, label, axisOffsets, axisMultipliers);
+            PlottableHeatmap heatmap = new PlottableHeatmap(intensities, colormap, label, axisOffsets, axisMultipliers, scaleMin, scaleMax, transparencyThreshold, backgroundImage, displayImageAbove, drawAxisLabels);
             settings.plottables.Add(heatmap);
             MatchAxis(this);
             Ticks(false, false); //I think we need to sort out our own labelling with System.Drawing
@@ -797,7 +815,7 @@ namespace ScottPlot
             double[] ys,
             string label = null,
             Color? color = null,
-            Config.ColorMaps.Colormap colormap = null,
+            Colormap colormap = null,
             double scaleFactor = 1
             )
         {
@@ -1134,11 +1152,27 @@ namespace ScottPlot
 
             if (autoAxis)
             {
+                // perform a tight axis adjustment
+                AxisAuto(0, 0);
+                double[] tightAxisLimits = Axis();
+
+                // now loosen it up a bit
                 AxisAuto();
+
                 if (horizontal)
-                    Axis(x1: 0);
+                {
+                    if (tightAxisLimits[0] == 0)
+                        Axis(x1: 0);
+                    else if (tightAxisLimits[1] == 0)
+                        Axis(x2: 0);
+                }
                 else
-                    Axis(y1: 0);
+                {
+                    if (tightAxisLimits[2] == 0)
+                        Axis(y1: 0);
+                    else if (tightAxisLimits[3] == 0)
+                        Axis(y2: 0);
+                }
             }
 
             return barPlot;
@@ -1175,14 +1209,21 @@ namespace ScottPlot
             int seriesCount = ys.Length;
             double barWidth = groupWidthFraction / seriesCount;
             PlottableBar[] bars = new PlottableBar[seriesCount];
+            bool containsNegativeY = false;
             for (int i = 0; i < seriesCount; i++)
             {
                 double offset = i * barWidth;
                 double[] barYs = ys[i];
                 double[] barYerr = yErr?[i];
                 double[] barXs = DataGen.Consecutive(barYs.Length);
+                containsNegativeY |= barYs.Where(y => y < 0).Any();
                 bars[i] = PlotBar(barXs, barYs, barYerr, seriesLabels[i], barWidth * barWidthFraction, offset,
                     errorCapSize: errorCapSize, showValues: showValues);
+            }
+
+            if (containsNegativeY)
+            {
+                AxisAuto();
             }
             XTicks(DataGen.Consecutive(groupLabels.Length, offset: (groupWidthFraction - barWidth) / 2), groupLabels);
 

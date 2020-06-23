@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>net461;net472;netcoreapp3.0</TargetFrameworks>
     <AssemblyName>ScottPlot.WinForms</AssemblyName>
     <RootNamespace>ScottPlot</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
@@ -17,9 +17,9 @@ Release demo: http://swharden.com/scottplot/demo</PackageReleaseNotes>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>4.0.35</Version>
-    <AssemblyVersion>4.0.35</AssemblyVersion>
-    <FileVersion>4.0.35</FileVersion>
+    <Version>4.0.37</Version>
+    <AssemblyVersion>4.0.37.0</AssemblyVersion>
+    <FileVersion>4.0.37.0</FileVersion>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
