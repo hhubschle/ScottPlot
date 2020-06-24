@@ -24,8 +24,8 @@ namespace ScottPlot
         private Color[] arrowColors;
         private double scaleFactor;
 
-        public double ArrowheadLength { get; set; } = 0.5;
-        public double ArrowheadWidth { get; set; } = 0.15;
+        public double ArrowHeadLength { get; set; } = 0.5;
+        public double ArrowHeadWidth { get; set; } = 0.15;
         public bool Centered { get; set; } = true;
         public bool FancyTip { get; set; }
 
@@ -124,6 +124,7 @@ namespace ScottPlot
         private void PlotVector(Vector2 v, double tailX, double tailY, Settings settings)
         {
             PointF tail, end;
+
             if (Centered)
             {
                 tail = settings.GetPixel(tailX - v.X / 2, tailY - v.Y / 2);
@@ -139,21 +140,21 @@ namespace ScottPlot
         }
         private void PlotVectorFancy(Vector2 v, double tailX, double tailY, Settings settings)
         {
-            double baseX = tailX - (Centered ? 0 : v.X / 2);
-            double baseY = tailY - (Centered ? 0 : v.Y / 2);
+            double baseX = tailX - (Centered ? v.X / 2 : 0);
+            double baseY = tailY - (Centered ? v.Y / 2 : 0);
             double tipX = tailX + (Centered ? v.X / 2 : v.X);
             double tipY = tailY + (Centered ? v.Y / 2 : v.Y);
 
             var dx = tipX - baseX;
             var dy = tipY - baseY;
             var arrowAngle = Math.Atan2(dy, dx);
-            var headAngle = Math.Atan2(ArrowheadWidth, ArrowheadLength);
+            var headAngle = Math.Atan2(ArrowHeadWidth, ArrowHeadLength);
             var sinA1 = Math.Sin(headAngle - arrowAngle);
             var cosA1 = Math.Cos(headAngle - arrowAngle);
             var sinA2 = Math.Sin(headAngle + arrowAngle);
             var cosA2 = Math.Cos(headAngle + arrowAngle);
             var len = Math.Sqrt(dx * dx + dy * dy);
-            var hypLen = len * Math.Sqrt(ArrowheadLength * ArrowheadLength + ArrowheadWidth * ArrowheadWidth);
+            var hypLen = len * Math.Sqrt(ArrowHeadLength * ArrowHeadLength + ArrowHeadWidth * ArrowHeadWidth);
 
             var corner1X = tipX - hypLen * cosA1;
             var corner1Y = tipY + hypLen * sinA1;
