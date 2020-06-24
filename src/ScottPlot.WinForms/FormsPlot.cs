@@ -24,16 +24,11 @@ namespace ScottPlot
             }
         }
 
-        public FormsPlot(Plot plt)
+        public FormsPlot(Plot plt = null)
         {
             InitializeComponent();
+            pbPlot.MouseWheel += PbPlot_MouseWheel;
             Reset(plt);
-        }
-
-        public FormsPlot()
-        {
-            InitializeComponent();
-            Reset(null);
         }
 
         public void Reset()
@@ -59,8 +54,6 @@ namespace ScottPlot
         private void InitializeScottPlot(bool applyDefaultStyle = true)
         {
             ContextMenuStrip = DefaultRightClickMenu();
-
-            pbPlot.MouseWheel += PbPlot_MouseWheel;
 
             isDesignerMode = Process.GetCurrentProcess().ProcessName == "devenv";
             lblTitle.Visible = isDesignerMode;
