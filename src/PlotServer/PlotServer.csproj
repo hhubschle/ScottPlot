@@ -190,7 +190,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Protobuf Include="..\..\..\Grpc\Protos\PlotServer.proto">
+    <Protobuf Include="..\..\..\ProtoFiles\PlotServer.proto">
       <Link>PlotServer.proto</Link>
     </Protobuf>
     <None Include="packages.config" />
