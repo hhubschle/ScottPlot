@@ -78,12 +78,13 @@ namespace PlotServer
 					vector.CenterOfGravity.Y,
 					vector.CenterOfGravity.X + plotScale * d.X,
 					vector.CenterOfGravity.Y + plotScale * d.Y,
-					color: Color.DodgerBlue);
+					color: Color.Blue);
 				xs[index] = vector.CenterOfGravity.X;
 				ys[index] = vector.CenterOfGravity.Y;
 			}
 
 			Plt.PlotScatter(xs, ys, lineWidth: 0, markerShape: MarkerShape.none);
+            //Plt.AxisScale(-1);
 			// highlightedText = Plt.PlotText("", 0, 0, fontSize: 15, color: Color.Black,
 			// 	frameColor: Color.AliceBlue, frame: true);
 			// highlightedText.visible = false;

@@ -33,6 +33,14 @@ namespace PlotServer
         {
             var field = LoadVectorField(file);
 
+            CreateDoc(file, field);
+        }
+
+        private void CreateDoc(string file, RectWithVector[] field)
+        {
+            if (this.ExecuteOnUIThread(CreateDoc, file, field))
+                return;
+
             try
             {
                 CreateDoc(file);
