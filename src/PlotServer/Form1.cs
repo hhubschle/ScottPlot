@@ -14,7 +14,9 @@ namespace PlotServer
 {
 	public partial class Form1:Form
 	{
-		public Form1()
+        private PlotServer _server;
+
+        public Form1()
 		{
 			InitializeComponent();
 		}
@@ -24,20 +26,25 @@ namespace PlotServer
 			if (openFileDialog1.ShowDialog(this) != DialogResult.OK) return;
 
 			var file = openFileDialog1.FileName;
-			var field = LoadVectorField(file);
+			LoadAndDisplayField(file);
+        }
 
-			try
-			{
-				CreateDoc(file);
-				ActivePlotContainer?.SetData(field);
-			}
-			catch (Exception ex)
-			{
-				Messager.ShowError(this, ex);
-			}
-		}
+        private void LoadAndDisplayField(string file)
+        {
+            var field = LoadVectorField(file);
 
-		private PlotContainer ActivePlotContainer
+            try
+            {
+                CreateDoc(file);
+                ActivePlotContainer?.SetData(field);
+            }
+            catch (Exception ex)
+            {
+                Messager.ShowError(this, ex);
+            }
+        }
+
+        private PlotContainer ActivePlotContainer
 		{
 			get
 			{
@@ -134,9 +141,7 @@ namespace PlotServer
 					Messager.ShowFileOpenError(this, filename, ex);
 				}
 			}
-
-
-		}
+        }
 
 		private PlotDoc CreateDoc(string filename)
 		{
@@ -157,24 +162,30 @@ namespace PlotServer
 			return doc;
 		}
 
-		// private TabPage CreatePage(string filename)
-		// {
-		// 	var plotContainer = new PlotContainer {Dock = DockStyle.Fill, AllowDrop = true,};
-		// 	plotContainer.DragEnter += Form1_DragEnter;
-		// 	plotContainer.DragDrop += Form1_DragDrop;
-		// 	var tabPage = new TabPage();
-		//
-		// 	tabPage.Controls.Add(plotContainer);
-		// 	tabPage.Location = new System.Drawing.Point(4, 22);
-		// 	tabPage.Name = "tabPage";
-		// 	tabPage.Padding = new System.Windows.Forms.Padding(3);
-		// 	tabPage.Size = new System.Drawing.Size(792, 399);
-		// 	tabPage.TabIndex = 2;
-		// 	tabPage.Text = Path.GetFileName(filename);
-		// 	tabPage.UseVisualStyleBackColor = true;
-		// 	tabControl1.Controls.Add(tabPage);
-		// 	tabControl1.SelectedTab = tabPage;
-		// 	return tabPage;
-		// }
-	}
+        private void Form1_Load(object sender,EventArgs e)
+        {
+            _server = new PlotServer("localhost");
+            _server.LoadFile += (o, args) => LoadAndDisplayField(args.FileName);
+        }
+
+        // private TabPage CreatePage(string filename)
+        // {
+        // 	var plotContainer = new PlotContainer {Dock = DockStyle.Fill, AllowDrop = true,};
+        // 	plotContainer.DragEnter += Form1_DragEnter;
+        // 	plotContainer.DragDrop += Form1_DragDrop;
+        // 	var tabPage = new TabPage();
+        //
+        // 	tabPage.Controls.Add(plotContainer);
+        // 	tabPage.Location = new System.Drawing.Point(4, 22);
+        // 	tabPage.Name = "tabPage";
+        // 	tabPage.Padding = new System.Windows.Forms.Padding(3);
+        // 	tabPage.Size = new System.Drawing.Size(792, 399);
+        // 	tabPage.TabIndex = 2;
+        // 	tabPage.Text = Path.GetFileName(filename);
+        // 	tabPage.UseVisualStyleBackColor = true;
+        // 	tabControl1.Controls.Add(tabPage);
+        // 	tabControl1.SelectedTab = tabPage;
+        // 	return tabPage;
+        // }
+    }
 }

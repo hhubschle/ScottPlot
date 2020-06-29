@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.Plot = new PlotServer.PlotContainer();
+			this.Plot = new PlotContainer();
 			this.SuspendLayout();
 			// 
 			// Plot
