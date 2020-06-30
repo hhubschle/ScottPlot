@@ -43,8 +43,8 @@ namespace PlotServer
 
             try
             {
-                CreateDoc(file);
-                ActivePlotContainer?.SetData(field);
+                var doc = CreateDoc(file);
+                doc?.Plot?.SetData(field);
             }
             catch (Exception ex)
             {
